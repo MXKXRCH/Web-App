@@ -13,10 +13,11 @@ public class OperationController {
     @Autowired
     private OperationService operationService;
 
-    @GetMapping("/{opId}")
-    public ResponseEntity operationById(@PathVariable("opId") Long opId) {
+    @GetMapping("/{userId}/{opId}")
+    public ResponseEntity operationById(@PathVariable("userId") Long userId,
+                                        @PathVariable("opId") Long opId) {
         try {
-            return ResponseEntity.ok(operationService.getOperationById(opId));
+            return ResponseEntity.ok(operationService.getOperationById(userId, opId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Operation not found");
         }
@@ -32,17 +33,19 @@ public class OperationController {
         }
     }
 
-    @PutMapping(value = "/{opId}", consumes="application/json")
-    public Operation putOperation (@PathVariable("opId") Long opId,
+    @PutMapping(value = "/{userId}/{opId}", consumes="application/json")
+    public Operation putOperation (@PathVariable("userId") Long userId,
+                                   @PathVariable("opId") Long opId,
                                    @RequestBody Operation operation) {
-        return operationService.updateOperation(opId, operation);
+        return operationService.updateOperation(userId, opId, operation);
     }
 
 
-    @DeleteMapping("/{opId}")
-    public ResponseEntity deleteOperation(@PathVariable("opId") Long opId) {
+    @DeleteMapping("/{userId}/{opId}")
+    public ResponseEntity deleteOperation(@PathVariable("userId") Long userId,
+                                          @PathVariable("opId") Long opId) {
         try {
-            operationService.deleteOperationById(opId);
+            operationService.deleteOperationById(userId, opId);
             return ResponseEntity.ok("Operation deleted");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Operation error");

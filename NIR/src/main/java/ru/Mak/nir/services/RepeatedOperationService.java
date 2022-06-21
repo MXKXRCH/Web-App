@@ -1,6 +1,8 @@
 package ru.Mak.nir.services;
 
+import com.Mak.NIR.entities.*;
 import ru.Mak.nir.entities.RepeatedOperation;
+import ru.Mak.nir.entities.RepeatedOperationPK;
 import ru.Mak.nir.entities.User;
 import ru.Mak.nir.repos.RepeatedOperationRepo;
 import ru.Mak.nir.repos.UserRepo;
@@ -20,17 +22,18 @@ public class RepeatedOperationService {
         return operationRepo.save(operation);
     }
 
-    public RepeatedOperation updateOperation(Long opId, RepeatedOperation operation) {
-        operation.setId(opId);
+    public RepeatedOperation updateOperation(Long userId, Long opId, RepeatedOperation operation) {
+        operation.setRepeatedOperationPK(new RepeatedOperationPK(userId, opId));
         return operationRepo.save(operation);
     }
 
-    public RepeatedOperation getOperationById(Long opId) {
-        return operationRepo.getById(opId);
+    public RepeatedOperation getOperationById(Long userId, Long opId) {
+        return operationRepo.getById(new RepeatedOperationPK(userId, opId));
     }
 
-    public Long deleteOperationById(Long opId) {
-        operationRepo.deleteById(opId);
-        return opId;
+    public RepeatedOperationPK deleteOperationById(Long userId, Long opId) {
+        RepeatedOperationPK id = new RepeatedOperationPK(userId, opId);
+        operationRepo.deleteById(id);
+        return id;
     }
 }

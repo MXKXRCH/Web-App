@@ -14,10 +14,11 @@ public class TagController {
     @Autowired
     private TagService tagService;
 
-    @GetMapping("/{tagId}")
-    public ResponseEntity tagById(@PathVariable("tagId") Long tagId) {
+    @GetMapping("/{userId}/{tagId}")
+    public ResponseEntity tagById(@PathVariable("userId") Long userId,
+                                  @PathVariable("tagId") Long tagId) {
         try {
-            return ResponseEntity.ok(tagService.getTagById(tagId));
+            return ResponseEntity.ok(tagService.getTagById(userId, tagId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Tag not found");
         }
@@ -35,16 +36,18 @@ public class TagController {
         }
     }
 
-    @PutMapping(value = "/{goalId}", consumes="application/json")
-    public Tag putTag (@PathVariable("tagId") Long tagId,
+    @PutMapping(value = "/{userId}/{goalId}", consumes="application/json")
+    public Tag putTag (@PathVariable("userId") Long userId,
+                       @PathVariable("tagId") Long tagId,
                        @RequestBody Tag tag) {
-        return tagService.updateTag(tagId, tag);
+        return tagService.updateTag(userId, tagId, tag);
     }
 
-    @DeleteMapping("/{tagId}")
-    public ResponseEntity deleteTag(@PathVariable("tagId") Long tagId) {
+    @DeleteMapping("/{userId}/{tagId}")
+    public ResponseEntity deleteTag(@PathVariable("userId") Long userId,
+                                    @PathVariable("tagId") Long tagId) {
         try {
-            tagService.delete(tagId);
+            tagService.delete(userId, tagId);
             return ResponseEntity.ok("Tag deleted");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Tag error");

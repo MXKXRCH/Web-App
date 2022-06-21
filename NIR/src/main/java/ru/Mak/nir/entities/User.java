@@ -28,13 +28,13 @@ public class User {
     @Enumerated (EnumType.STRING)
     private Set<Role> roles;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "userEntity")
     private Set<Operation> userOperations = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "userEntity")
     private Set<RepeatedOperation> userRepeatedOperations = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "userEntity")
     private Set<Goal> goalEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "userEntity")
     private Set<Tag> tags = new HashSet<>();
 
     public String getUserPassHash() {

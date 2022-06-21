@@ -15,19 +15,17 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
 public class Tag {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+    @EmbeddedId
+    private TagPK tagPK;
 
     @MapsId("userId")
     @ManyToOne
     private User user;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tagEntity")
     private Set<Operation> operationEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tagEntity")
     private Set<Goal> goalEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tagEntity")
     private Set<RepeatedOperation> repeatedOperationEntities  = new HashSet<>();
 }

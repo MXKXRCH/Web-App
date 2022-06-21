@@ -1,7 +1,9 @@
 package ru.Mak.nir.services;
 
+import com.Mak.NIR.entities.*;
 import ru.Mak.nir.repos.TagRepo;
 import ru.Mak.nir.entities.Tag;
+import ru.Mak.nir.entities.TagPK;
 import ru.Mak.nir.entities.User;
 import ru.Mak.nir.exceptions.TagAlreadyExistsException;
 import ru.Mak.nir.repos.UserRepo;
@@ -23,17 +25,18 @@ public class TagService {
         return tagRepo.save(tag);
     }
 
-    public Tag updateTag(Long tagId, Tag tag) {
-        tag.setId(tagId);
+    public Tag updateTag(Long userId, Long tagId, Tag tag) {
+        tag.setTagPK(new TagPK(userId, tagId));
         return tagRepo.save(tag);
     }
 
-    public Tag getTagById(Long tagId) {
-        return tagRepo.getById(tagId);
+    public Tag getTagById(Long userId, Long tagId) {
+        return tagRepo.getById(new TagPK(userId, tagId));
     }
 
-    public Long delete(Long tagId) {
-        tagRepo.deleteById(tagId);
-        return tagId;
+    public TagPK delete(Long userId, Long tagId) {
+        TagPK id = new TagPK(userId, tagId);
+        tagRepo.deleteById(id);
+        return id;
     }
 }

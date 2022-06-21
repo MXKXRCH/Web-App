@@ -1,6 +1,7 @@
 package ru.Mak.nir.services;
 
 import ru.Mak.nir.entities.Operation;
+import ru.Mak.nir.entities.OperationPK;
 import ru.Mak.nir.entities.User;
 import ru.Mak.nir.repos.OperationRepo;
 import ru.Mak.nir.repos.UserRepo;
@@ -27,8 +28,9 @@ public class OperationService {
         return operationRepo.save(operation);
     }
 
-    public Operation updateOperation(Long opId, Operation operation) {
-        operation.setId(opId);
+    public Operation updateOperation(Long userId, Long opId, Operation operation) {
+        OperationPK id = new OperationPK(userId, opId);
+        operation.setOperationPK(id);
         return operationRepo.save(operation);
     }
 
@@ -37,12 +39,14 @@ public class OperationService {
                 .setParameter("paramMin", minOperationTime).setParameter("paramMax", maxOperationTime).getResultList();
     }
 
-    public Operation getOperationById(Long opId) {
-        return operationRepo.getById(opId);
+    public Operation getOperationById(Long userId, Long opId) {
+        OperationPK id = new OperationPK(userId, opId);
+        return operationRepo.getById(id);
     }
 
-    public Long deleteOperationById(Long opId) {
-        operationRepo.deleteById(opId);
-        return opId;
+    public OperationPK deleteOperationById(Long userId, Long opId) {
+        OperationPK id = new OperationPK(userId, opId);
+        operationRepo.deleteById(id);
+        return id;
     }
 }

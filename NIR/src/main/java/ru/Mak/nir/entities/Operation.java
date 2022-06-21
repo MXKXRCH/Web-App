@@ -14,9 +14,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
 public class Operation {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private OperationPK operationPK;
 
     @Column (name = "operationTime")
     private Date operationTime = new Date();
@@ -27,10 +26,12 @@ public class Operation {
     @Column (name = "realSum")
     private Float realSum;
 
+    @MapsId("userId")
     @ManyToOne
     @JoinColumn (name = "user_id")
     private User user;
 
+    @MapsId("tagName")
     @ManyToOne
     @JoinColumn (name = "tag_id")
     private Tag tag;

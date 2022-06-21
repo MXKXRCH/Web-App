@@ -13,9 +13,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
 public class RepeatedOperation {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private RepeatedOperationPK repeatedOperationPK;
 
     @Column (name = "day")
     private Integer day;
@@ -29,10 +28,12 @@ public class RepeatedOperation {
     @Enumerated (EnumType.STRING)
     private OperationType operationType;
 
+    @MapsId("userId")
     @ManyToOne
     @JoinColumn (name = "user_id")
     private User user;
 
+    @MapsId("tagName")
     @ManyToOne
     @JoinColumn (name = "tag_id")
     private Tag tag;

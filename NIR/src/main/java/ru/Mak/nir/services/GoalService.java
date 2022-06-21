@@ -1,6 +1,7 @@
 package ru.Mak.nir.services;
 
 import ru.Mak.nir.entities.Goal;
+import ru.Mak.nir.entities.GoalPK;
 import ru.Mak.nir.entities.User;
 import ru.Mak.nir.repos.GoalRepo;
 import ru.Mak.nir.repos.UserRepo;
@@ -23,17 +24,20 @@ public class GoalService {
         return goalRepo.save(goal);
     }
 
-    public Goal updateGoal(Long goalId, Goal goal) {
-        goal.setId(goalId);
+    public Goal updateGoal(Long userId, Long goalId, Goal goal) {
+        GoalPK id = new GoalPK(userId, goalId);
+        goal.setGoalPK(id);
         return goalRepo.save(goal);
     }
 
-    public Goal getGoalById(Long goalId) {
-        return goalRepo.getById(goalId);
+    public Goal getGoalById(Long userId, Long goalId) {
+        GoalPK id = new GoalPK(userId, goalId);
+        return goalRepo.getById(id);
     }
 
-    public Long deleteGoalById(Long goalId) {
-        goalRepo.deleteById(goalId);
-        return goalId;
+    public GoalPK deleteGoalById(Long userId, Long goalId) {
+        GoalPK id = new GoalPK(userId, goalId);
+        goalRepo.deleteById(id);
+        return id;
     }
 }

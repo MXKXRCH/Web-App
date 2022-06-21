@@ -14,9 +14,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
 public class Goal {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private GoalPK goalPK;
     @Column (name = "sum")
     private Float sum;
     @Column (name = "deadLine")
@@ -28,10 +27,12 @@ public class Goal {
     @Column (name = "description")
     private String description;
 
+    @MapsId ("userId")
     @ManyToOne
     @JoinColumn (name = "user_id")
     private User user;
 
+    @MapsId ("tagName")
     @ManyToOne
     @JoinColumn (name = "tag_id")
     private Tag tag;

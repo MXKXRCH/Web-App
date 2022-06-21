@@ -13,10 +13,11 @@ public class GoalController {
     @Autowired
     GoalService goalService;
 
-    @GetMapping("/{goalId}")
-    public ResponseEntity goalById(@PathVariable("goalId") Long goalId) {
+    @GetMapping("/{userId}/{goalId}")
+    public ResponseEntity goalById(@PathVariable("userId") Long userId,
+                                   @PathVariable("goalId") Long goalId) {
         try {
-            return ResponseEntity.ok(goalService.getGoalById(goalId));
+            return ResponseEntity.ok(goalService.getGoalById(userId, goalId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Operation not found");
         }
@@ -32,16 +33,18 @@ public class GoalController {
         }
     }
 
-    @PutMapping(value = "/{goalId}", consumes="application/json")
-    public Goal putGoal (@PathVariable("goalId") Long goalId,
+    @PutMapping(value = "/{userId}/{goalId}", consumes="application/json")
+    public Goal putGoal (@PathVariable("userId") Long userId,
+                         @PathVariable("goalId") Long goalId,
                          @RequestBody Goal goal) {
-        return goalService.updateGoal(goalId, goal);
+        return goalService.updateGoal(userId, goalId, goal);
     }
 
-    @DeleteMapping("/{goalId}")
-    public ResponseEntity deleteGoal(@PathVariable("goalId") Long goalId) {
+    @DeleteMapping("/{userId}/{goalId}")
+    public ResponseEntity deleteGoal(@PathVariable("userId") Long userId,
+                                     @PathVariable("goalId") Long goalId) {
         try {
-            goalService.deleteGoalById(goalId);
+            goalService.deleteGoalById(userId, goalId);
             return ResponseEntity.ok("Goal deleted");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Goal error");
