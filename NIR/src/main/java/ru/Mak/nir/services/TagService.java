@@ -8,6 +8,8 @@ import ru.Mak.nir.repos.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TagService {
     @Autowired
@@ -15,25 +17,30 @@ public class TagService {
     @Autowired
     private UserRepo userRepo;
 
-    public Tag createTag(Tag tag, Long userId) throws TagAlreadyExistsException {
-        if (userRepo.findByUserName(tag.getName()) != null)
+    public Tag create(Tag tag, Long userId) throws TagAlreadyExistsException {
+        if (tagRepo.findByName(tag.getName()) != null)
             throw new TagAlreadyExistsException("Tag with this name is already exists");
         User user = userRepo.findById(userId).get();
         tag.setUser(user);
+        if (user == null) return null;
         return tagRepo.save(tag);
     }
 
-    public Tag updateTag(Long tagId, Tag tag) {
+    public Tag update(Long tagId, Tag tag) {
         tag.setId(tagId);
         return tagRepo.save(tag);
     }
 
-    public Tag getTagById(Long tagId) {
+    public Tag getById(Long tagId) {
         return tagRepo.getById(tagId);
     }
 
     public Long delete(Long tagId) {
         tagRepo.deleteById(tagId);
         return tagId;
+    }
+
+    public List<Tag> getAll() {
+        return tagRepo.findAll();
     }
 }

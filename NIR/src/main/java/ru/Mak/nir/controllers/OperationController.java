@@ -1,51 +1,88 @@
 package ru.Mak.nir.controllers;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import ru.Mak.nir.entities.Operation;
 import ru.Mak.nir.services.OperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping(path="/operations",
-                produces="application/json")
+@RequestMapping(path="/operations")
 public class OperationController {
     @Autowired
-    private OperationService operationService;
+    OperationService operationService;
 
-    @GetMapping("/{opId}")
-    public ResponseEntity operationById(@PathVariable("opId") Long opId) {
-        try {
-            return ResponseEntity.ok(operationService.getOperationById(opId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation not found");
-        }
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Operation> operationById(@PathVariable Long id) {
+        if (id == null)
+            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+
+        Operation operation = operationService.getById(id);
+
+        if (operation == null)
+            return new ResponseEntity<Operation>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<Operation>(operation, HttpStatus.OK);
     }
 
-    @PostMapping(consumes="application/json")
-    public ResponseEntity createOperation(@RequestBody Operation operation,
-                                          @RequestParam Long userId) {
-        try {
-            return ResponseEntity.ok(operationService.createOperation(operation, userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation error");
-        }
+    @RequestMapping(value = "",
+                    method = RequestMethod.POST,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Operation> createOperation(@RequestBody Operation operation,
+                                         @RequestParam Long userId) {
+        if (userId == null)
+            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+
+        if (operation == null)
+            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+
+        operation = operationService.create(operation, userId);
+        return new ResponseEntity<Operation>(operation, new HttpHeaders(), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{opId}", consumes="application/json")
-    public Operation putOperation (@PathVariable("opId") Long opId,
-                                   @RequestBody Operation operation) {
-        return operationService.updateOperation(opId, operation);
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.PUT,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Operation> putOperation (@PathVariable Long id,
+                                         @RequestBody Operation operation) {
+        if (id == null || operation == null)
+            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<Operation>(operationService.update(id, operation), new HttpHeaders(), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Operation> deleteOperation(@PathVariable Long id) {
+        if (id == null)
+            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
 
-    @DeleteMapping("/{opId}")
-    public ResponseEntity deleteOperation(@PathVariable("opId") Long opId) {
-        try {
-            operationService.deleteOperationById(opId);
-            return ResponseEntity.ok("Operation deleted");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation error");
-        }
+        Operation operation = operationService.getById(id);
+
+        if (operation == null)
+            return new ResponseEntity<Operation>(HttpStatus.NOT_FOUND);
+
+        operationService.delete(id);
+        return new ResponseEntity<Operation>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = "/all",
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Operation>> getAllProducts() {
+        List<Operation> operations = operationService.getAll();
+
+        if (operations.isEmpty())
+            return new ResponseEntity<List<Operation>>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<List<Operation>>(operations, HttpStatus.OK);
     }
 }

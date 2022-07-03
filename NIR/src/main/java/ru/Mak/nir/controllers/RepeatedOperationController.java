@@ -1,50 +1,88 @@
 package ru.Mak.nir.controllers;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import ru.Mak.nir.entities.RepeatedOperation;
 import ru.Mak.nir.services.RepeatedOperationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping(path="/repeatedOperations",
-                produces="application/json")
+@RequestMapping(path="/repeatedOperations")
 public class RepeatedOperationController {
     @Autowired
-    private RepeatedOperationService operationService;
+    RepeatedOperationService repeatedOperationService;
 
-    @GetMapping("/{opId}")
-    public ResponseEntity operationById(@PathVariable("opId") Long opId) {
-        try {
-            return ResponseEntity.ok(operationService.getOperationById(opId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation not found");
-        }
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RepeatedOperation> repeatedOperationById(@PathVariable Long id) {
+        if (id == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.BAD_REQUEST);
+
+        RepeatedOperation repeatedOperation = repeatedOperationService.getById(id);
+
+        if (repeatedOperation == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<RepeatedOperation>(repeatedOperation, HttpStatus.OK);
     }
 
-    @PostMapping(consumes="application/json")
-    public ResponseEntity createRepeatedOperation(@RequestBody RepeatedOperation operation,
-                                                  @RequestParam Long userId) {
-        try {
-            return ResponseEntity.ok(operationService.createRepeatedOperation(operation, userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation error");
-        }
+    @RequestMapping(value = "",
+                    method = RequestMethod.POST,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RepeatedOperation> createRepeatedOperation(@RequestBody RepeatedOperation repeatedOperation,
+                                         @RequestParam Long userId) {
+        if (userId == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.BAD_REQUEST);
+
+        if (repeatedOperation == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.BAD_REQUEST);
+
+        repeatedOperation = repeatedOperationService.create(repeatedOperation, userId);
+        return new ResponseEntity<RepeatedOperation>(repeatedOperation, new HttpHeaders(), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{opId}", consumes="application/json")
-    public RepeatedOperation putOperation (@PathVariable("opId") Long opId,
-                                           @RequestBody RepeatedOperation operation) {
-        return operationService.updateOperation(opId, operation);
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.PUT,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RepeatedOperation> putRepeatedOperation (@PathVariable Long id,
+                                         @RequestBody RepeatedOperation repeatedOperation) {
+        if (id == null || repeatedOperation == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<RepeatedOperation>(repeatedOperationService.update(id, repeatedOperation), new HttpHeaders(), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{opId}")
-    public ResponseEntity deleteOperation(@PathVariable("opId") Long opId) {
-        try {
-            operationService.deleteOperationById(opId);
-            return ResponseEntity.ok("Operation deleted");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Operation error");
-        }
+    @RequestMapping(value = "{id}",
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RepeatedOperation> deleteRepeatedOperation(@PathVariable Long id) {
+        if (id == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.BAD_REQUEST);
+
+        RepeatedOperation repeatedOperation = repeatedOperationService.getById(id);
+
+        if (repeatedOperation == null)
+            return new ResponseEntity<RepeatedOperation>(HttpStatus.NOT_FOUND);
+
+        repeatedOperationService.delete(id);
+        return new ResponseEntity<RepeatedOperation>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = "/all",
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<RepeatedOperation>> getAllProducts() {
+        List<RepeatedOperation> repeatedOperations = repeatedOperationService.getAll();
+
+        if (repeatedOperations.isEmpty())
+            return new ResponseEntity<List<RepeatedOperation>>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<List<RepeatedOperation>>(repeatedOperations, HttpStatus.OK);
     }
 }
