@@ -1,51 +1,64 @@
 package ru.Mak.nir.entities;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import ru.Mak.nir.DTO.UserDTO;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table (name = "userEntity")
+@Table (name = "user")
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
-public class User {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column (name = "userName")
-    private String userName;
-    @Column (name = "userPass")
-    private String userPass;
+public class User extends Base {
+    @Column (name = "name")
+    private String name;
+    @Column (name = "password")
+    private String pass;
     @ElementCollection (targetClass = Role.class, fetch = FetchType.LAZY)
-    @CollectionTable (name = "user_role", joinColumns = @JoinColumn (name = "user_id"))
+    @CollectionTable (name = "role", joinColumns = @JoinColumn (name = "user_id"))
     @Enumerated (EnumType.STRING)
     private Set<Role> roles;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
-    private Set<Operation> userOperations = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
-    private Set<RepeatedOperation> userRepeatedOperations = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
-    private Set<Goal> goalEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
-    private Set<Tag> tags = new HashSet<>();
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Operation> userOperations;
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<RepeatedOperation> userRepeatedOperations;
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Goal> goalEntities;
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Tag> tags;
+
+    public User(UserDTO userDTO, String password) {
+        this.setId(userDTO.getId());
+        this.name = userDTO.getName();
+        this.setUserPass(password);
+        try {
+            for (String s : userToDTO().getRoles()) {
+                roles.add(Role.valueOf(s));
+            }
+        } catch (IllegalArgumentException e) {
+            roles.clear();
+            roles.add(Role.USER);
+        }
+    }
+
+    public UserDTO userToDTO() {
+        return new UserDTO(this);
+    }
 
     public String getUserPassHash() {
-        return this.userPass;
+        return this.pass;
     }
 
     public void setUserPass(String userPass) {
-        this.userPass = BCrypt.hashpw(userPass, BCrypt.gensalt());
+        this.pass = BCrypt.hashpw(userPass, BCrypt.gensalt());
     }
 
     public boolean isValidPassword(String pass) {
-        return BCrypt.checkpw(pass, this.userPass);
+        return BCrypt.checkpw(pass, this.pass);
     }
 }

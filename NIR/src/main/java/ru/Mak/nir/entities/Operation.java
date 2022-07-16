@@ -1,37 +1,46 @@
 package ru.Mak.nir.entities;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import ru.Mak.nir.DTO.OperationDTO;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table (name = "Operation")
+@Table (name = "operation")
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
-public class Operation {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column (name = "operationTime")
-    private Date operationTime = new Date();
+public class Operation extends Base {
+    @Column (name = "operation_time")
+    private Date operationTime;
     @Column (name = "description")
     private String description;
-    @Column (name = "plannedSum")
+    @Column (name = "planned_sum")
     private Float plannedSum;
-    @Column (name = "realSum")
+    @Column (name = "real_sum")
     private Float realSum;
 
     @ManyToOne
     @JoinColumn (name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn (name = "tag_id")
-    private Tag tag;
+    @ManyToMany
+    private Set<Tag> tags;
+
+    public Operation(OperationDTO operationDTO, Set<Tag> tags, User user) {
+        this.setId(operationDTO.getId());
+        this.operationTime = operationDTO.getOperationTime();
+        this.description = operationDTO.getDescription();
+        this.plannedSum = operationDTO.getPlannedSum();
+        this.realSum = operationDTO.getRealSum();
+        this.tags = tags;
+        this.user = user;
+    }
+
+    public OperationDTO toOperationDTO() {
+        return new OperationDTO(this);
+    }
 }

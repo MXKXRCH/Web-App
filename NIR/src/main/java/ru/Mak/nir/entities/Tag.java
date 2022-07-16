@@ -1,33 +1,53 @@
 package ru.Mak.nir.entities;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import ru.Mak.nir.DTO.TagDTO;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table (name = "Tag")
+@Table (name = "tag")
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
-public class Tag {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Tag extends Base {
+    @Column (name = "name")
     private String name;
 
-    @MapsId("userId")
     @ManyToOne
+    @JoinColumn(name="user_id")
     private User user;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
-    private Set<Operation> operationEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
-    private Set<Goal> goalEntities = new HashSet<>();
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "tag")
-    private Set<RepeatedOperation> repeatedOperationEntities  = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "tag_operation",
+            joinColumns = @JoinColumn(name = "operation_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Operation> operations;
+    @ManyToMany
+    @JoinTable(
+            name = "tag_goal",
+            joinColumns = @JoinColumn(name = "goal_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Goal> goals;
+    @ManyToMany
+    @JoinTable(
+            name = "tag_ro",
+            joinColumns = @JoinColumn(name = "ro_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<RepeatedOperation> repeatedOperations;
+
+    public Tag(TagDTO tagDTO) {
+        this.setId(tagDTO.getId());
+        this.name = tagDTO.getName();
+    }
+
+    public TagDTO tagToDTO() {
+        return new TagDTO(this);
+    }
 }

@@ -1,28 +1,25 @@
 package ru.Mak.nir.entities;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import ru.Mak.nir.DTO.GoalDTO;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table (name = "Goal")
+@Table (name = "goal")
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
-public class Goal {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Goal extends Base {
     @Column (name = "sum")
     private Float sum;
-    @Column (name = "deadLine")
-    private Date deadLine = new Date();
-    @Column (name = "startDate")
-    private Date startDate;
+    @Column (name = "deadline")
+    private Date deadLine;
+    @Column (name = "created_date")
+    private Date createdDate;
     @Column (name = "completed")
     private Boolean completed;
     @Column (name = "description")
@@ -32,7 +29,21 @@ public class Goal {
     @JoinColumn (name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn (name = "tag_id")
-    private Tag tag;
+    @ManyToMany
+    private Set<Tag> tags;
+
+    public Goal(GoalDTO goalDTO, Set<Tag> tags, User user) {
+        this.setId(goalDTO.getId());
+        this.sum = goalDTO.getSum();
+        this.deadLine = goalDTO.getDeadLine();
+        this.createdDate = goalDTO.getCreatedDate();
+        this.completed = goalDTO.getCompleted();
+        this.description = goalDTO.getDescription();
+        this.tags = tags;
+        this.user = user;
+    }
+
+    public GoalDTO goalToDTO() {
+        return new GoalDTO(this);
+    }
 }

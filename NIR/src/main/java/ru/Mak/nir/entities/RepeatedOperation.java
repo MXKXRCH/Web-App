@@ -1,31 +1,27 @@
 package ru.Mak.nir.entities;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import ru.Mak.nir.DTO.RepeatedOperationDTO;
 
 import javax.persistence.*;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table (name = "Repeated_operation")
+@Table (name = "repeated_operation")
 @AllArgsConstructor
 @NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
-public class RepeatedOperation {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class RepeatedOperation extends Base {
     @Column (name = "day")
     private Integer day;
     @Column (name = "description")
     private String description;
     @Column (name = "sum")
     private Float sum;
-    @Column (name = "forwardPlanned")
+    @Column (name = "forward_planned")
     private Integer forwardPlanned;
-    @CollectionTable (name = "operation_role", joinColumns = @JoinColumn (name = "ro_id"))
+    @CollectionTable (name = "operation_type", joinColumns = @JoinColumn (name = "ro_id"))
     @Enumerated (EnumType.STRING)
     private OperationType operationType;
 
@@ -33,7 +29,24 @@ public class RepeatedOperation {
     @JoinColumn (name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn (name = "tag_id")
-    private Tag tag;
+    @ManyToMany
+    private Set<Tag> tags;
+
+    public RepeatedOperation(RepeatedOperationDTO ro, Set<Tag> tags) {
+        this.setId(ro.getId());
+        this.day = ro.getDay();
+        this.description = ro.getDescription();
+        this.sum = ro.getSum();
+        this.forwardPlanned = ro.getForwardPlanned();
+        this.tags = tags;
+        try {
+            operationType = OperationType.valueOf(ro.getOperationType());
+        } catch (IllegalArgumentException e) {
+            operationType = OperationType.MONTLY;
+        }
+    }
+
+    public RepeatedOperationDTO roToDTO() {
+        return new RepeatedOperationDTO(this);
+    }
 }
