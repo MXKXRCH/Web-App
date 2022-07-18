@@ -1,90 +1,87 @@
 package ru.Mak.nir.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import ru.Mak.nir.entities.Tag;
-import ru.Mak.nir.exceptions.TagAlreadyExistsException;
-import ru.Mak.nir.services.TagService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.Mak.nir.DTO.TagDTO;
+import ru.Mak.nir.services.TagService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(path="/tags")
+@RequestMapping(path="/tags", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TagController {
     @Autowired
     TagService tagService;
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Tag> tagById(@PathVariable Long id) {
-        if (id == null)
-            return new ResponseEntity<Tag>(HttpStatus.BAD_REQUEST);
-
-        Tag tag = tagService.getById(id);
-
-        if (tag == null)
-            return new ResponseEntity<Tag>(HttpStatus.NOT_FOUND);
-
-        return new ResponseEntity<Tag>(tag, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "",
-                    method = RequestMethod.POST,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Tag> createTag(@RequestBody Tag tag,
-                                         @RequestParam Long userId) {
-        if (userId == null || tag == null)
-            return new ResponseEntity<Tag>(HttpStatus.BAD_REQUEST);
-
-        try {
-            tag = tagService.create(tag, userId);
-        } catch (TagAlreadyExistsException e) {
-            return new ResponseEntity<Tag>(HttpStatus.CONFLICT);
+    @GetMapping("/{id}")
+    public ResponseEntity<TagDTO> getTag(@PathVariable("id") Long id) {
+        if (id == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<Tag>(tag, new HttpHeaders(), HttpStatus.CREATED);
+        TagDTO tag = tagService.getById(id);
+        if (tag == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(tag, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.PUT,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Tag> putTag (@PathVariable Long id,
-                                         @RequestBody Tag tag) {
-        if (id == null || tag == null)
-            return new ResponseEntity<Tag>(HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<Tag>(tagService.update(id, tag), new HttpHeaders(), HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<TagDTO> createTag(@RequestBody @Valid TagDTO tag,
+                                              @RequestParam Long userId) {
+        if (userId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (tag == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        tagService.save(tag, userId);
+        return new ResponseEntity<>(tag, new HttpHeaders(), HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.DELETE,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Tag> deleteTag(@PathVariable Long id) {
+    @PutMapping("/{id}")
+    public ResponseEntity<TagDTO> putTag (@PathVariable("id") Long id,
+                                            @RequestBody @Valid TagDTO tag) {
+        if (id == null || tag == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        tag = tagService.update(id, tag);
+        if (tag == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(tag, new HttpHeaders(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<TagDTO> deleteTag(@PathVariable("id") Long id) {
         if (id == null)
-            return new ResponseEntity<Tag>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        Tag tag = tagService.getById(id);
+        TagDTO tag = tagService.getById(id);
 
         if (tag == null)
-            return new ResponseEntity<Tag>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         tagService.delete(id);
-        return new ResponseEntity<Tag>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/all",
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Tag>> getAllProducts() {
-        List<Tag> tags = tagService.getAll();
+    @GetMapping("/all")
+    public ResponseEntity<List<TagDTO>> getAllTags(
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        List<TagDTO> tags = tagService.getAll(pageable);
 
         if (tags.isEmpty())
-            return new ResponseEntity<List<Tag>>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-        return new ResponseEntity<List<Tag>>(tags, HttpStatus.OK);
+        return new ResponseEntity<>(tags, HttpStatus.OK);
     }
 }

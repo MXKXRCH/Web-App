@@ -30,13 +30,12 @@ public class Operation extends Base {
     @ManyToMany
     private Set<Tag> tags;
 
-    public Operation(OperationDTO operationDTO, Set<Tag> tags, User user) {
+    public Operation(OperationDTO operationDTO, User user) {
         this.setId(operationDTO.getId());
         this.operationTime = operationDTO.getOperationTime();
         this.description = operationDTO.getDescription();
         this.plannedSum = operationDTO.getPlannedSum();
         this.realSum = operationDTO.getRealSum();
-        this.tags = tags;
         this.user = user;
     }
 

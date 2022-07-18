@@ -1,88 +1,81 @@
 package ru.Mak.nir.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import ru.Mak.nir.entities.Operation;
-import ru.Mak.nir.services.OperationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.Mak.nir.DTO.OperationDTO;
+import ru.Mak.nir.entities.Operation;
+import ru.Mak.nir.services.OperationService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(path="/operations")
+@RequestMapping(path="/operations", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OperationController {
     @Autowired
     OperationService operationService;
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Operation> operationById(@PathVariable Long id) {
-        if (id == null)
-            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
-
-        Operation operation = operationService.getById(id);
-
-        if (operation == null)
-            return new ResponseEntity<Operation>(HttpStatus.NOT_FOUND);
-
-        return new ResponseEntity<Operation>(operation, HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<OperationDTO> getOperation(@PathVariable("id") Long id) {
+        if (id == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        OperationDTO operation = operationService.getById(id);
+        if (operation == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(operation, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "",
-                    method = RequestMethod.POST,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Operation> createOperation(@RequestBody Operation operation,
-                                         @RequestParam Long userId) {
-        if (userId == null)
-            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
-
-        if (operation == null)
-            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
-
-        operation = operationService.create(operation, userId);
-        return new ResponseEntity<Operation>(operation, new HttpHeaders(), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<OperationDTO> createOperation(@RequestBody @Valid OperationDTO operation,
+                                                        @RequestParam Long userId) {
+        if (userId == null || operation == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        operationService.save(operation, userId);
+        return new ResponseEntity<>(operation, new HttpHeaders(), HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.PUT,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Operation> putOperation (@PathVariable Long id,
-                                         @RequestBody Operation operation) {
+    @PutMapping("/{id}")
+    public ResponseEntity<OperationDTO> putOperation (@PathVariable Long id,
+                                                      @RequestBody @Valid OperationDTO operation) {
         if (id == null || operation == null)
-            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        return new ResponseEntity<Operation>(operationService.update(id, operation), new HttpHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(operationService.update(id, operation), new HttpHeaders(), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{id}",
-                    method = RequestMethod.DELETE,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/{id}")
     public ResponseEntity<Operation> deleteOperation(@PathVariable Long id) {
         if (id == null)
-            return new ResponseEntity<Operation>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        Operation operation = operationService.getById(id);
+        OperationDTO operation = operationService.getById(id);
 
         if (operation == null)
-            return new ResponseEntity<Operation>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         operationService.delete(id);
-        return new ResponseEntity<Operation>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/all",
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Operation>> getAllProducts() {
-        List<Operation> operations = operationService.getAll();
+    @GetMapping("/all")
+    public ResponseEntity<List<OperationDTO>> getAllOperations(
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        List<OperationDTO> operations = operationService.getAll(pageable);
 
         if (operations.isEmpty())
-            return new ResponseEntity<List<Operation>>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-        return new ResponseEntity<List<Operation>>(operations, HttpStatus.OK);
+        return new ResponseEntity<>(operations, HttpStatus.OK);
     }
 }

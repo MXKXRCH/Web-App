@@ -1,65 +1,90 @@
 package ru.Mak.nir.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import ru.Mak.nir.entities.User;
-import ru.Mak.nir.exceptions.UserAlreadyExistsException;
-import ru.Mak.nir.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.Mak.nir.DTO.UserDTO;
+import ru.Mak.nir.exceptions.UserAlreadyExistsException;
+import ru.Mak.nir.services.UserService;
+
+import javax.validation.Valid;
+import java.util.List;
 
 @RestController
-@RequestMapping(path="/users",
-                produces="application/json")
+@RequestMapping(path="/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
     @Autowired
-    private UserService userService;
+    UserService userService;
 
-    @RequestMapping(value = "{id}",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> userById(@RequestBody Long id) {
-        if (id == null)
-            return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
-
-        User user = userService.getById(id);
-
-        if (user == null)
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-
-        return new ResponseEntity<User>(user, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "",
-            method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        if (user == null)
-            return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
-
-        try {
-            user = userService.addUser(user);
-        } catch (UserAlreadyExistsException e) {
-            return new ResponseEntity<User>(HttpStatus.CONFLICT);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable("id") Long id) {
+        if (id == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<User>(user, new HttpHeaders(), HttpStatus.CREATED);
+        UserDTO user = userService.getById(id);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{id}",
-            method = RequestMethod.DELETE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> deleteGoal(@PathVariable Long id) {
-        if (id == null)
-            return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserDTO user,
+                                              @RequestBody String pass) {
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            userService.save(user, pass);
+        } catch (UserAlreadyExistsException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(user, new HttpHeaders(), HttpStatus.CREATED);
+    }
 
-        User user = userService.getById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> putUser (@PathVariable("id") Long id,
+                                            @RequestBody @Valid UserDTO user) {
+        if (id == null || user == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        user = userService.update(id, user);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(user, new HttpHeaders(), HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserDTO> deleteUser(@PathVariable("id") Long id) {
+        if (id == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        UserDTO user = userService.getById(id);
 
         if (user == null)
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         userService.delete(id);
-        return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<UserDTO>> getAllUsers(
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        List<UserDTO> users = userService.getAll(pageable);
+
+        if (users.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }

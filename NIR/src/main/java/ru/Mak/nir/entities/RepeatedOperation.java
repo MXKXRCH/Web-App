@@ -32,13 +32,13 @@ public class RepeatedOperation extends Base {
     @ManyToMany
     private Set<Tag> tags;
 
-    public RepeatedOperation(RepeatedOperationDTO ro, Set<Tag> tags) {
+    public RepeatedOperation(RepeatedOperationDTO ro, User user) {
         this.setId(ro.getId());
         this.day = ro.getDay();
         this.description = ro.getDescription();
         this.sum = ro.getSum();
         this.forwardPlanned = ro.getForwardPlanned();
-        this.tags = tags;
+        this.user = user;
         try {
             operationType = OperationType.valueOf(ro.getOperationType());
         } catch (IllegalArgumentException e) {

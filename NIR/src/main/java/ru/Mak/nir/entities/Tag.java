@@ -42,9 +42,10 @@ public class Tag extends Base {
     )
     private Set<RepeatedOperation> repeatedOperations;
 
-    public Tag(TagDTO tagDTO) {
+    public Tag(TagDTO tagDTO, User user) {
         this.setId(tagDTO.getId());
         this.name = tagDTO.getName();
+        this.user = user;
     }
 
     public TagDTO tagToDTO() {

@@ -1,16 +1,19 @@
 package ru.Mak.nir.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import ru.Mak.nir.DTO.OperationDTO;
 import ru.Mak.nir.entities.Operation;
 import ru.Mak.nir.entities.User;
 import ru.Mak.nir.repos.OperationRepo;
 import ru.Mak.nir.repos.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OperationService {
@@ -21,16 +24,23 @@ public class OperationService {
     @Autowired
     private UserRepo userRepo;
 
-    public Operation create(Operation operation, Long userId) {
-        User user = userRepo.findById(userId).get();
-        if (user == null) return null;
-        operation.setUser(user);
-        return operationRepo.save(operation);
+    public void save(OperationDTO operation, Long userId) {
+        User user = userRepo.findById(userId).orElse(null);
+        if (user == null) {
+            return;
+        }
+        operationRepo.save(new Operation(operation, user));
     }
 
-    public Operation update(Long opId, Operation operation) {
+    public OperationDTO update(Long opId, OperationDTO operationDTO) {
+        Operation updatedOperation = operationRepo.findById(opId).orElse(null);
+        if (updatedOperation == null) {
+            return null;
+        }
+        Operation operation = new Operation(operationDTO, updatedOperation.getUser());
         operation.setId(opId);
-        return operationRepo.save(operation);
+        operation.setTags(updatedOperation.getTags());
+        return operationRepo.save(operation).toOperationDTO();
     }
 
     public List<Operation> getOperationsByDate(Date minOperationTime, Date maxOperationTime) {
@@ -38,16 +48,16 @@ public class OperationService {
                 .setParameter("paramMin", minOperationTime).setParameter("paramMax", maxOperationTime).getResultList();
     }
 
-    public Operation getById(Long opId) {
-        return operationRepo.getById(opId);
+    public OperationDTO getById(Long id) {
+        Operation operation = operationRepo.findById(id).orElse(null);
+        return (operation == null) ? null : operation.toOperationDTO();
     }
 
-    public Long delete(Long opId) {
+    public void delete(Long opId) {
         operationRepo.deleteById(opId);
-        return opId;
     }
 
-    public List<Operation> getAll() {
-        return operationRepo.findAll();
+    public List<OperationDTO> getAll(Pageable pageable) {
+        return operationRepo.findAll(pageable).stream().map(Operation::toOperationDTO).collect(Collectors.toList());
     }
 }

@@ -32,18 +32,17 @@ public class Goal extends Base {
     @ManyToMany
     private Set<Tag> tags;
 
-    public Goal(GoalDTO goalDTO, Set<Tag> tags, User user) {
+    public Goal(GoalDTO goalDTO, User user) {
         this.setId(goalDTO.getId());
         this.sum = goalDTO.getSum();
         this.deadLine = goalDTO.getDeadLine();
         this.createdDate = goalDTO.getCreatedDate();
         this.completed = goalDTO.getCompleted();
         this.description = goalDTO.getDescription();
-        this.tags = tags;
         this.user = user;
     }
 
-    public GoalDTO goalToDTO() {
+    public GoalDTO toGoalDTO() {
         return new GoalDTO(this);
     }
 }

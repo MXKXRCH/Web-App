@@ -1,14 +1,16 @@
 package ru.Mak.nir.services;
 
-import ru.Mak.nir.repos.TagRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import ru.Mak.nir.DTO.TagDTO;
 import ru.Mak.nir.entities.Tag;
 import ru.Mak.nir.entities.User;
-import ru.Mak.nir.exceptions.TagAlreadyExistsException;
+import ru.Mak.nir.repos.TagRepo;
 import ru.Mak.nir.repos.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
@@ -17,30 +19,34 @@ public class TagService {
     @Autowired
     private UserRepo userRepo;
 
-    public Tag create(Tag tag, Long userId) throws TagAlreadyExistsException {
-        if (tagRepo.findByName(tag.getName()) != null)
-            throw new TagAlreadyExistsException("Tag with this name is already exists");
-        User user = userRepo.findById(userId).get();
-        tag.setUser(user);
-        if (user == null) return null;
-        return tagRepo.save(tag);
+    public void save(TagDTO tagDTO, Long userId) {
+        User user = userRepo.findById(userId).orElse(null);
+        if (user == null) {
+            return;
+        }
+        tagRepo.save(new Tag(tagDTO, user));
     }
 
-    public Tag update(Long tagId, Tag tag) {
+    public TagDTO update(Long tagId, TagDTO tagDTO) {
+        Tag updatedTag = tagRepo.findById(tagId).orElse(null);
+        if (updatedTag == null) {
+            return null;
+        }
+        Tag tag = new Tag(tagDTO, updatedTag.getUser());
         tag.setId(tagId);
-        return tagRepo.save(tag);
+        return tagRepo.save(tag).tagToDTO();
     }
 
-    public Tag getById(Long tagId) {
-        return tagRepo.getById(tagId);
+    public TagDTO getById(Long id) {
+        Tag tag = tagRepo.findById(id).orElse(null);
+        return (tag == null) ? null : tag.tagToDTO();
     }
 
-    public Long delete(Long tagId) {
+    public void delete(Long tagId) {
         tagRepo.deleteById(tagId);
-        return tagId;
     }
 
-    public List<Tag> getAll() {
-        return tagRepo.findAll();
+    public List<TagDTO> getAll(Pageable pageable) {
+        return tagRepo.findAll(pageable).stream().map(Tag::tagToDTO).collect(Collectors.toList());
     }
 }
